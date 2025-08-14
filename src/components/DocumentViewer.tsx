@@ -20,34 +20,82 @@ interface DocumentViewerProps {
 export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => {
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const [showDiff, setShowDiff] = useState(false);
-  const [diffChanges, setDiffChanges] = useState<Diff.Change[]>([]);
+  const [diffLines, setDiffLines] = useState<Array<{content: string, type: 'added' | 'removed' | 'unchanged'}>>([]);
 
   const currentDoc = documents[currentDocIndex];
   const previousDoc = currentDocIndex > 0 ? documents[currentDocIndex - 1] : null;
 
   useEffect(() => {
     if (showDiff && currentDoc && previousDoc) {
-      const changes = Diff.diffWords(previousDoc.content, currentDoc.content);
-      setDiffChanges(changes);
+      const previousLines = previousDoc.content.split('\n');
+      const currentLines = currentDoc.content.split('\n');
+      const changes = Diff.diffArrays(previousLines, currentLines);
+      
+      const processedLines: Array<{content: string, type: 'added' | 'removed' | 'unchanged'}> = [];
+      
+      changes.forEach(change => {
+        if (change.added) {
+          change.value.forEach(line => {
+            processedLines.push({ content: line, type: 'added' });
+          });
+        } else if (change.removed) {
+          change.value.forEach(line => {
+            processedLines.push({ content: line, type: 'removed' });
+          });
+        } else {
+          change.value.forEach(line => {
+            processedLines.push({ content: line, type: 'unchanged' });
+          });
+        }
+      });
+      
+      setDiffLines(processedLines);
     }
   }, [currentDoc, previousDoc, showDiff]);
 
   const renderContent = () => {
-    if (showDiff && diffChanges.length > 0) {
+    if (showDiff && diffLines.length > 0) {
       return (
         <div className="prose prose-sm max-w-none">
-          {diffChanges.map((change, index) => (
-            <span
+          {diffLines.map((line, index) => (
+            <div
               key={index}
               className={cn(
-                'rounded px-1',
-                change.added && 'bg-diff-added border-l-2 border-diff-added-border text-diff-added-text',
-                change.removed && 'bg-diff-removed border-l-2 border-diff-removed-border text-diff-removed-text line-through',
-                !change.added && !change.removed && 'bg-transparent'
+                'rounded my-1',
+                line.type === 'added' && 'bg-diff-added border-l-4 border-diff-added-border pl-4',
+                line.type === 'removed' && 'bg-diff-removed border-l-4 border-diff-removed-border pl-4 opacity-75',
+                line.type === 'unchanged' && 'pl-4'
               )}
             >
-              {change.value}
-            </span>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p: ({ children }) => <span className="block">{children}</span>,
+                  code: ({ children, ...props }) => {
+                    const isInline = !props.className?.includes('language-');
+                    if (isInline) {
+                      return (
+                        <code className="bg-code-bg border border-code-border rounded px-1 py-0.5 text-sm font-mono">
+                          {children}
+                        </code>
+                      );
+                    }
+                    return (
+                      <pre className="bg-code-bg border border-code-border rounded-lg p-4 overflow-x-auto">
+                        <code className="text-sm font-mono">{children}</code>
+                      </pre>
+                    );
+                  },
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-4 border-primary pl-4 my-2 italic text-muted-foreground">
+                      {children}
+                    </blockquote>
+                  ),
+                }}
+              >
+                {line.content || ' '}
+              </ReactMarkdown>
+            </div>
           ))}
         </div>
       );
