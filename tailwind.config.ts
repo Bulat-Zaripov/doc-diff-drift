@@ -52,6 +52,18 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				diff: {
+					added: 'hsl(var(--diff-added))',
+					'added-border': 'hsl(var(--diff-added-border))',
+					'added-text': 'hsl(var(--diff-added-text))',
+					removed: 'hsl(var(--diff-removed))',
+					'removed-border': 'hsl(var(--diff-removed-border))',
+					'removed-text': 'hsl(var(--diff-removed-text))'
+				},
+				code: {
+					bg: 'hsl(var(--code-bg))',
+					border: 'hsl(var(--code-border))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
