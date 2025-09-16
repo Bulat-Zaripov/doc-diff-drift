@@ -128,7 +128,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => 
   const renderContent = () => {
     if (showDiff && diffLines.length > 0) {
       return (
-        <div className="prose prose-sm max-w-none">
+        <div className="prose max-w-none">
           {diffLines.map((line, index) => (
             <div
               key={index}
@@ -142,7 +142,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => 
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  p: ({ children }) => <span className="block">{children}</span>,
+                  p: ({ children }) => <span className="block mb-2">{children}</span>,
                   h1: ({ children }) => {
                     const id = children?.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') || '';
                     return <h1 id={id} className="scroll-mt-4">{children}</h1>;
@@ -167,26 +167,6 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => 
                     const id = children?.toString().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') || '';
                     return <h6 id={id} className="scroll-mt-4">{children}</h6>;
                   },
-                  code: ({ children, ...props }) => {
-                    const isInline = !props.className?.includes('language-');
-                    if (isInline) {
-                      return (
-                        <code className="bg-code-bg border border-code-border rounded px-1 py-0.5 text-sm font-mono">
-                          {children}
-                        </code>
-                      );
-                    }
-                    return (
-                      <pre className="bg-code-bg border border-code-border rounded-lg p-4 overflow-x-auto">
-                        <code className="text-sm font-mono">{children}</code>
-                      </pre>
-                    );
-                  },
-                  blockquote: ({ children }) => (
-                    <blockquote className="border-l-4 border-primary pl-4 my-2 italic text-muted-foreground">
-                      {children}
-                    </blockquote>
-                  ),
                 }}
               >
                 {line.content || ' '}
@@ -198,7 +178,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => 
     }
 
     return (
-      <div className="prose prose-sm max-w-none">
+      <div className="prose max-w-none">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -246,22 +226,16 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({ documents }) => 
                 const highlightedText = highlightSearchTerm(children?.toString() || '');
                 return (
                   <code 
-                    className="bg-code-bg border border-code-border rounded px-1 py-0.5 text-sm font-mono"
                     dangerouslySetInnerHTML={{ __html: highlightedText }}
                   />
                 );
               }
               return (
-                <pre className="bg-code-bg border border-code-border rounded-lg p-4 overflow-x-auto">
-                  <code className="text-sm font-mono">{children}</code>
+                <pre>
+                  <code>{children}</code>
                 </pre>
               );
             },
-            blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-primary pl-4 my-4 italic text-muted-foreground">
-                {children}
-              </blockquote>
-            ),
           }}
         >
           {currentDoc.content}
